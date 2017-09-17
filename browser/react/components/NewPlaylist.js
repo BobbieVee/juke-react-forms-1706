@@ -2,31 +2,37 @@ import React, { Component } from 'react';
 import axios from 'axios';
 
 class NewPlaylist extends Component {
-  constructor() {
+  constructor(props) {
     super()
     this.state = {
-      input: ''
+      input: '',
+      disabled: true,
+      hidden: true, 
+      tooLong: true
     };
     this.handleInput = this.handleInput.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    console.log('props = ', props)
+    this.handleNewPlaylist = props.handleNewPlaylist;
   }
 
   handleInput(e){
+    e.preventDefault();
     const input = e.target.value;
-    this.setState({input});
-    event.preventDefault();
+    const disabled = input.length > 0 && input.length < 16 ? false : true;
+    const hidden = input.length > 0 ? true : '';
+    const tooLong = input.length > 16 ? '' : true;
+    this.setState({ input, disabled, hidden, tooLong });
   }
 
   handleSubmit(){
-    const input = this.state.input;
-    axios.post('/api/playlists', { name: input })
-    .then( () => {
-      this.setState({input: ''})
-    })
+    const name = this.state.input;
+    this.handleNewPlaylist(name);
+    this.setState({input: ''});
   }
 
   render() {
-    const input = this.state.input;
+    const {input, disabled, hidden, tooLong } = this.state;
     return (
       <div className="well">
         <form className="form-horizontal" onSubmit={this.handleSubmit}>
@@ -38,9 +44,12 @@ class NewPlaylist extends Component {
                 <input className="form-control" type="text" value={input} onChange={this.handleInput}/>
               </div>
             </div>
+            <div className="alert alert-warning"  hidden={hidden}>Please enter a name</div>
+            <div className="alert alert-warning"  hidden={tooLong}>Please keep under 16 characters</div>
+
             <div className="form-group">
               <div className="col-xs-10 col-xs-offset-2">
-                <button type="submit" className="btn btn-success">Create Playlist</button>
+                <button type="submit" disabled={disabled} className="btn btn-success">Create Playlist</button>
               </div>
             </div>
           </fieldset>
